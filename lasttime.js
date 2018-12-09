@@ -215,6 +215,7 @@ function retrieve_track_info(artist_data, album_data, track_data) {
 }
 
 function lastfm_on_recent_tracks(data) {
+    console.log(data);
     data = data.recenttracks;
     var attr = data["@attr"];
     var tracks = data.track;
@@ -277,7 +278,7 @@ function lastfm_on_recent_tracks(data) {
     $progress_bar.attr("aria-valuenow", curr_page).width(curr_page * 100 / total_pages + "%");
     $progress_info.text("Loading scrobbles... " + curr_page + " / " + total_pages);
     if (curr_page < total_pages)
-        lastfm_api_request("user.getrecenttracks", { user: "undefinist", from: from_time, limit: 200, page: curr_page + 1 }).done(lastfm_on_recent_tracks);
+        lastfm_api_request("user.getrecenttracks", { user: attr.user, from: from_time, limit: 200, page: curr_page + 1 }).done(lastfm_on_recent_tracks);
     else {
         let tracks_loaded = lastfm_tracks.length - lastfm_trackinfo_counter;
         $progress_bar.attr({ "aria-valuemax": lastfm_tracks.length, "aria-valuenow": tracks_loaded })
@@ -310,5 +311,5 @@ $("#run-form").on("submit", function(e) {
     $(this).collapse("hide");
 
     lastfm_api_key = $("#api-key-input").val();
-    lastfm_api_request("user.getrecenttracks", { user: "undefinist", from: from_time, limit: 200 }).done(lastfm_on_recent_tracks);
+    lastfm_api_request("user.getrecenttracks", { user: $("#username-input").val(), from: from_time, limit: 200 }).done(lastfm_on_recent_tracks);
 });
