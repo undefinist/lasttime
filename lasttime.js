@@ -10,6 +10,7 @@ var lastfm_total_time = 0;
 var lastfm_trackinfo_counter = 0;
 var lastfm_scrobbles_loaded = false;
 var lastfm_top_artists = [];
+var mb_api_request_counter = 0;
 
 var track_info_cache = JSON.parse(localStorage.getItem("lasttime.track_info_cache"));
 if(track_info_cache === null)
@@ -141,9 +142,8 @@ function retrieve_track_info(artist_data, album_data, track_data) {
             if(cached_track_data.duration === 0 || cached_track_data.is_missed_track === true)
                 missed_tracks.push(cache_id);
 
-            console.log(cached_track_data);
+            console.log("from cache: ", cached_track_data);
             on_track_get_info(cached_track_data.duration, info_index);
-            ++track_data.count;
             return;
         }
     }
@@ -153,12 +153,11 @@ function retrieve_track_info(artist_data, album_data, track_data) {
         setTimeout(function () {
             mb_api_query("recording", { recording: track_data.name, artist: artist_data.name, release: album_data.name }).done(function (data) {
                 data = data.count ? data.recordings[0] : null;
-                console.log(data);
                 if (data === null || !data.hasOwnProperty("length")) {
                     // no length data, try last.fm data.
                     lastfm_api_request("track.getinfo", { artist: artist_data.name, track: track_data.name }).done(function (data) {
                         data = data.track;
-                        console.log(data);
+                        console.log("from last.fm: ", data);
 
                         let dur = parseInt(data.duration);
                         if(dur === 0) {
@@ -173,22 +172,22 @@ function retrieve_track_info(artist_data, album_data, track_data) {
                 }
                 else
                 {
+                    console.log("from musicbrainz: ", data);
                     track_info_cache[cache_id].duration = data.length;
                     localStorage["lasttime.track_info_cache"] = JSON.stringify(track_info_cache);
                     on_track_get_info(data.length, info_index);
                 }
             });
-        }, lastfm_tracks.length * 1000); // 1s delay before each call
+        }, mb_api_request_counter * 1000); // 1s delay before each call
     }
     else {
         setTimeout(function () {
             mb_api_lookup("recording", track_data.mbid).done(function (data) {
-                console.log(data);
                 if (data === null || !data.hasOwnProperty("length")) {
                     // no length data, try last.fm data.
                     lastfm_api_request("track.getinfo", { mbid: track_data.mbid }).done(function (data) {
                         data = data.track;
-                        console.log(data);
+                        console.log("from last.fm: ", data);
 
                         let dur = parseInt(data.duration);
                         if(dur === 0) {
@@ -203,13 +202,16 @@ function retrieve_track_info(artist_data, album_data, track_data) {
                 }
                 else
                 {
+                    console.log("from musicbrainz: ", data);
                     track_info_cache[cache_id].duration = data.length;
                     localStorage["lasttime.track_info_cache"] = JSON.stringify(track_info_cache);
                     on_track_get_info(data.length, info_index);
                 }
             });
-        }, lastfm_tracks.length * 1000); // 1s delay before each call
+        }, mb_api_request_counter * 1000); // 1s delay before each call
     }
+
+    ++mb_api_request_counter;
 }
 
 function lastfm_on_recent_tracks(data) {
@@ -296,6 +298,8 @@ $("#run-form").on("submit", function(e) {
         this.classList.add('was-validated');
         return;
     }
+
+    mb_api_request_counter = 0;
 
     var $from_date = $("#date-from-input");
     if($from_date.val())
