@@ -55,14 +55,7 @@ function mb_api_query(entity, search_fields) {
     });
 }
 
-function lastfm_api_request(method, params) {
-    var url = lastfm_api_url + method + "&api_key=" + lastfm_api_key;
-    for (const key in params) {
-        if (params.hasOwnProperty(key))
-            url += "&" + key + "=" + params[key];
-    }
-    return $.getJSON(url);
-}
+
 
 function on_track_get_info(duration, info_index) {
     lastfm_tracks[info_index].duration = duration;
