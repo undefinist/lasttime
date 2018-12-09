@@ -26,12 +26,16 @@ function lastfm_api_request(method, params) {
         if (params.hasOwnProperty(key))
             url += "&" + key + "=" + params[key];
     }
-    return $.getJSON(url);
+    return $.getJSON(url).catch(function() {
+        return { duration: "0" };
+    });
 }
 
 function mb_api_lookup(entity, mbid) {
     var url = mb_api_url + entity + "/" + mbid + "?fmt=json";
-    return $.getJSON(url);
+    return $.getJSON(url).catch(function() {
+        return null;
+    });
 }
 
 function mb_api_query(entity, search_fields) {
@@ -46,7 +50,9 @@ function mb_api_query(entity, search_fields) {
             url += key + ":" + search_fields[key];
         }
     }
-    return $.getJSON(url);
+    return $.getJSON(url).catch(function() {
+        return { count: 0 };
+    });
 }
 
 function lastfm_api_request(method, params) {
