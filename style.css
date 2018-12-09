@@ -18,6 +18,10 @@ h1 > span {
 	color: #84DCC6;
 }
 
+#progress-update {
+	margin-bottom: 15px;
+}
+
 #minutes-listened-card .card-title {
 	margin-bottom: 0;
 }

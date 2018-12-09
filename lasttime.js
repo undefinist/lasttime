@@ -69,27 +69,29 @@ function on_track_get_info(duration, info_index) {
         lastfm_on_all_data();
 }
 
-function lastfm_on_all_data() {
-    $progress_info.text("Collating data...");
-
+function lastfm_collate_data() {
     lastfm_top_artists = [];
+    lastfm_total_time = 0;
 
     for (const artist_key in lastfm_artists) { // collate artists
         if (!lastfm_artists.hasOwnProperty(artist_key))
             continue;
 
         let artist_data = lastfm_artists[artist_key];
+        artist_data.total_time = 0;
         for (const album_key in artist_data.albums) { // collate albums
             if (!artist_data.albums.hasOwnProperty(album_key))
                 continue;
 
             let album_data = artist_data.albums[album_key];
+            album_data.total_time = 0;
             for (const track_key in album_data.tracks) { // collate tracks
                 if (!album_data.tracks.hasOwnProperty(track_key))
                     continue;
 
                 let track_data = album_data.tracks[track_key];
-                track_data.total_time = lastfm_tracks[track_data.info_index].duration * track_data.count;
+                track_data.total_time = lastfm_tracks[track_data.info_index].hasOwnProperty("duration") ?
+                    lastfm_tracks[track_data.info_index].duration * track_data.count : 0;
                 album_data.total_time += track_data.total_time;
             }
 
@@ -101,17 +103,9 @@ function lastfm_on_all_data() {
     }
 
     lastfm_top_artists.sort(function(a, b) { return b.duration - a.duration; });
+}
 
-    $progress_info.text("Done!");
-
-    setTimeout(function() {
-        $(".progress").collapse("hide");
-        $progress_info.collapse("hide");
-    }, 2000);
-
-    console.log(lastfm_artists);
-    console.log(Math.floor(lastfm_total_time / 60000) + " mins");
-
+function show_statistics() {
     $("#minutes-listened").text(Math.floor(lastfm_total_time / 60000).toLocaleString());
     $("#hours-listened").text(Math.floor(lastfm_total_time / 3600000).toLocaleString());
 
@@ -124,7 +118,24 @@ function lastfm_on_all_data() {
         $top_artists_list.append("<div class='list-item'>" + elem.name + " <span>" + Math.floor(elem.duration / 60000).toLocaleString() + " mins</span></div>");
     }
 
-    $("#statistics").collapse();
+    $("#statistics").collapse("show");
+}
+
+function lastfm_on_all_data() {
+    $progress_info.text("Collating data...");
+    lastfm_collate_data();
+    $progress_info.text("Done!");
+
+    setTimeout(function() {
+        $(".progress").collapse("hide");
+        $("#progress-update").collapse("hide");
+        $progress_info.collapse("hide");
+    }, 2000);
+
+    console.log(lastfm_artists);
+    console.log(Math.floor(lastfm_total_time / 60000) + " mins");
+
+    show_statistics();
 }
 
 function retrieve_track_info(artist_data, album_data, track_data) {
@@ -307,9 +318,15 @@ $("#run-form").on("submit", function(e) {
         from_time = new Date($from_date.val()).getTime() * 0.001;
 
     $(".progress").collapse("show");
+    $("#progress-update").collapse("show");
     $progress_info.collapse("show");
     $(this).collapse("hide");
 
     lastfm_api_key = $("#api-key-input").val();
     lastfm_api_request("user.getrecenttracks", { user: $("#username-input").val(), from: from_time, limit: 200 }).done(lastfm_on_recent_tracks);
+
+    $("#progress-update").on("click", function() {
+        lastfm_collate_data();
+        show_statistics();
+    })
 });
