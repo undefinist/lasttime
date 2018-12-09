@@ -167,6 +167,9 @@ function retrieve_track_info(artist_data, album_data, track_data) {
                 if (data === null || !data.hasOwnProperty("length")) {
                     // no length data, try last.fm data.
                     lastfm_api_request("track.getinfo", { artist: artist_data.name, track: track_data.name }).done(function (data) {
+                        if(!data.hasOwnProperty("track"))
+                            data.track = { duration: "0" };
+
                         data = data.track;
                         console.log("from last.fm: ", data);
 
@@ -197,6 +200,9 @@ function retrieve_track_info(artist_data, album_data, track_data) {
                 if (data === null || !data.hasOwnProperty("length")) {
                     // no length data, try last.fm data.
                     lastfm_api_request("track.getinfo", { mbid: track_data.mbid }).done(function (data) {
+                        if(!data.hasOwnProperty("track"))
+                            data.track = { duration: "0" };
+
                         data = data.track;
                         console.log("from last.fm: ", data);
 
