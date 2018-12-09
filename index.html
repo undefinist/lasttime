@@ -26,6 +26,14 @@
       <div>basic time statistics for last.fm</div>
     </div>
     <form id="run-form" class="needs-validation collapse show" novalidate>
+      <div class="row mb-3">
+        <div class="col">
+          How it works:<br>
+          1. Loads all your scrobbling data from Start Date. (Use your own API key because I'm lazy.)<br>
+          2. Retrieves all track data from MusicBrainz, otherwise last.fm if data not found.<br>
+          3. Collates all the data.<br>
+        </div>
+      </div>
       <div class="row">
         <div class="col-md-4">
           <div class="form-group">
@@ -68,7 +76,8 @@
 
   <footer class="footer">
     <div class="container">
-      <span class="text-muted"><a href="https://twitter.com/undefinist" target="_blank">@undefinist</a></span>
+      <a href="https://github.com/undefinist/lasttime" target="_blank">source</a>
+      <a href="https://twitter.com/undefinist" target="_blank">@undefinist</a>
     </div>
   </footer>
 

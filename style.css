@@ -103,7 +103,7 @@ h1 > span {
 .footer a {
 	color: #84DCC6;
 	font-size: 1rem;
-    padding: 0 1rem;
+    padding: 0 0.5rem;
     transition: transform 0.25s ease-out;
 	display: inline-block;
 }
