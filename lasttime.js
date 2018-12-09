@@ -1,6 +1,6 @@
 var lastfm_api_url = "https://ws.audioscrobbler.com/2.0/?format=json&method=";
 var lastfm_api_key = "";
-var mb_api_url = "http://musicbrainz.org/ws/2/";
+var mb_api_url = "https://musicbrainz.org/ws/2/";
 var from_time = new Date("01 January, 2018").getTime() * 0.001;
 
 // artist, album, track
