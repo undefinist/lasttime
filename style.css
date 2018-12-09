@@ -1,5 +1,6 @@
-html, body {
-	height: 100% !important;
+html {
+	position: relative;
+	min-height: 100%;
 }
 body {
 	font-family: Roboto, Calibri, Arial, sans-serif;
@@ -8,6 +9,7 @@ body {
 	margin: 0;
 	background: #f3f3f3;
 	color: #333333;
+	margin-bottom: 60px; /* Margin bottom by footer height */
 }
 
 h1 {
