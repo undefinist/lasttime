@@ -1,0 +1,86 @@
+html, body {
+	height: 100% !important;
+}
+body {
+	font-family: Roboto, Calibri, Arial, sans-serif;
+	font-weight: 300;
+	padding: 0;
+	margin: 0;
+	background: #f3f3f3;
+	color: #333333;
+}
+
+h1 {
+	font-family: "Varela Round", Calibri, Arial, sans-serif;
+	color: #FFA69E;
+}
+h1 > span {
+	color: #84DCC6;
+}
+.container {
+	padding-top: 15px;
+}
+
+#minutes-listened-card .card-title {
+	margin-bottom: 0;
+}
+
+.card {
+	background: none;
+}
+.display-1 {
+	font-family: Roboto, Calibri, Arial, sans-serif;
+	text-shadow: 5px 5px #84ded3;
+	font-weight: 700;
+	margin-bottom: 0;
+	line-height: 1.0;
+    margin-right: 1rem;
+    display: inline-block;
+}
+.card-title {
+	color: #666666;
+}
+
+.display-4 {
+	font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0;
+    line-height: 1.0;
+    display: inline-block;
+    color: #ffa69e;
+}
+.text-muted {
+	color: #d5d5d5 !important; 
+}
+
+.top-list {
+	counter-reset: list-counter;
+}
+.list-item {
+	font-size: 2rem;
+	font-weight: 700;
+	clear: both;
+}
+.list-item:before {
+	content: counter(list-counter, decimal-leading-zero) ". ";
+	counter-increment: list-counter;
+	color: #FFA69E;
+	font-weight: 300;
+}
+.list-item > span {
+	font-size: 2rem;
+	color: #84DCC6;
+	float: right;
+}
+
+#header h1 {
+	font-size: 4rem;
+	display: inline-block;
+}
+#header div {
+	display: inline-block;
+    font-size: 2rem;
+    font-family: "Varela Round";
+	color: #666666;
+	margin-bottom: 0.75rem;
+}
