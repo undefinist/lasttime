@@ -73,14 +73,17 @@ h1 > span {
 	float: right;
 }
 
+#header {
+	margin-bottom: 15px;
+}
 #header h1 {
 	font-size: 4rem;
 	display: inline-block;
+	margin-bottom: -0.4rem;
 }
 #header div {
 	display: inline-block;
     font-size: 2rem;
     font-family: "Varela Round";
 	color: #666666;
-	margin-bottom: 0.75rem;
 }
