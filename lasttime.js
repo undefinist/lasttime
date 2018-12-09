@@ -158,10 +158,12 @@ function retrieve_track_info(artist_data, album_data, track_data) {
         {
             if(cached_track_data.duration === 0 || cached_track_data.is_missed_track === true)
                 missed_tracks.push(cache_id);
-
-            console.log("from cache: ", cached_track_data);
-            on_track_get_info(cached_track_data.duration, info_index);
-            return;
+            else
+            {
+                console.log("from cache: ", cached_track_data);
+                on_track_get_info(cached_track_data.duration, info_index);
+                return;
+            }
         }
     }
     track_info_cache[cache_id] = {};
