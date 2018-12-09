@@ -111,8 +111,8 @@ function lastfm_on_all_data() {
     console.log(lastfm_artists);
     console.log(Math.floor(lastfm_total_time / 60000) + " mins");
 
-    $("#minutes-listened").text(Math.floor(lastfm_total_time / 60000));
-    $("#hours-listened").text(Math.floor(lastfm_total_time / 3600000));
+    $("#minutes-listened").text(Math.floor(lastfm_total_time / 60000).toLocaleString());
+    $("#hours-listened").text(Math.floor(lastfm_total_time / 3600000).toLocaleString());
 
     var $top_artists_list = $("#top-artists .top-list");
     $top_artists_list.empty();
@@ -120,7 +120,7 @@ function lastfm_on_all_data() {
     let max = Math.min(10, lastfm_top_artists.length);
     for (let i = 0; i < max; i++) {
         const elem = lastfm_top_artists[i];
-        $top_artists_list.append("<div class='list-item'>" + elem.name + " <span>" + Math.floor(elem.duration / 60000) + " mins</span></div>");
+        $top_artists_list.append("<div class='list-item'>" + elem.name + " <span>" + Math.floor(elem.duration / 60000).toLocaleString() + " mins</span></div>");
     }
 
     $("#statistics").collapse();

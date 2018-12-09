@@ -17,9 +17,6 @@ h1 {
 h1 > span {
 	color: #84DCC6;
 }
-.container {
-	padding-top: 15px;
-}
 
 #minutes-listened-card .card-title {
 	margin-bottom: 0;
@@ -75,6 +72,7 @@ h1 > span {
 
 #header {
 	margin-bottom: 15px;
+	padding-top: 15px;
 }
 #header h1 {
 	font-size: 4rem;
