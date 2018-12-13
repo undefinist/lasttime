@@ -24,6 +24,7 @@ var track_info_cache = (function() {
         throw "Cache version outdated.";
     } catch(e) {
         console.error(e);
+        localStorage.setItem("lasttime.track_info_cache", "{}");
         localStorage.setItem("lasttime.track_info_cache_version", JSON.stringify(LASTTIME_VERSION));
         return {};
     }
