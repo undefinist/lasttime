@@ -1,6 +1,6 @@
 const LASTFM_API_URL = "https://ws.audioscrobbler.com/2.0/?format=json&method=";
 const MB_API_URL = "https://musicbrainz.org/ws/2/";
-const VERSION = 0x00000002;
+const LASTTIME_VERSION = 0x00000002;
 
 var lastfm_api_key = "";
 var from_time = new Date("01 January, 2018").getTime() * 0.001;
@@ -19,12 +19,12 @@ var mb_api_request_counter = 0;
 var missed_tracks = [];
 var track_info_cache = (function() {
     try {
-        if(JSON.parse(localStorage.getItem("lasttime.track_info_cache_version")) == VERSION)
+        if(JSON.parse(localStorage.getItem("lasttime.track_info_cache_version")) == LASTTIME_VERSION)
             return JSON.parse(localStorage.getItem("lasttime.track_info_cache"));
         throw "Cache version outdated.";
     } catch(e) {
         console.error(e);
-        localStorage.setItem("lasttime.track_info_cache_version", JSON.stringify(VERSION));
+        localStorage.setItem("lasttime.track_info_cache_version", JSON.stringify(LASTTIME_VERSION));
         return {};
     }
 })();
