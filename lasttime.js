@@ -1,45 +1,57 @@
-var lastfm_api_url = "https://ws.audioscrobbler.com/2.0/?format=json&method=";
+const LASTFM_API_URL = "https://ws.audioscrobbler.com/2.0/?format=json&method=";
+const MB_API_URL = "https://musicbrainz.org/ws/2/";
+const VERSION = 0x00000002;
+
 var lastfm_api_key = "";
-var mb_api_url = "https://musicbrainz.org/ws/2/";
 var from_time = new Date("01 January, 2018").getTime() * 0.001;
+var lastfm_username = "";
 
 // artist, album, track
 var lastfm_artists = {};
 var lastfm_tracks = [];
 var lastfm_total_time = 0;
 var lastfm_trackinfo_counter = 0;
-var lastfm_scrobbles_loaded = false;
+var lastfm_all_scrobbles_loaded = false;
+var lastfm_pages_loaded = 0;
 var lastfm_top_artists = [];
 var mb_api_request_counter = 0;
 
-var track_info_cache = JSON.parse(localStorage.getItem("lasttime.track_info_cache"));
-if(track_info_cache === null)
-    track_info_cache = {};
 var missed_tracks = [];
+var track_info_cache = (function() {
+    try {
+        if(JSON.parse(localStorage.getItem("lasttime.track_info_cache_version")) == VERSION)
+            return JSON.parse(localStorage.getItem("lasttime.track_info_cache"));
+        throw "Cache version outdated.";
+    } catch(e) {
+        console.error(e);
+        localStorage.setItem("lasttime.track_info_cache_version", JSON.stringify(VERSION));
+        return {};
+    }
+})();
 
 var $progress_info = $("#progress-info");
 var $progress_bar = $(".progress-bar");
 
 function lastfm_api_request(method, params) {
-    var url = lastfm_api_url + method + "&api_key=" + lastfm_api_key;
+    var url = LASTFM_API_URL + method + "&api_key=" + lastfm_api_key;
     for (const key in params) {
         if (params.hasOwnProperty(key))
             url += "&" + key + "=" + params[key];
     }
     return $.getJSON(url).catch(function() {
-        return { duration: "0" };
+        return null;
     });
 }
 
 function mb_api_lookup(entity, mbid) {
-    var url = mb_api_url + entity + "/" + mbid + "?fmt=json";
+    var url = MB_API_URL + entity + "/" + mbid + "?fmt=json";
     return $.getJSON(url).catch(function() {
         return null;
     });
 }
 
 function mb_api_query(entity, search_fields) {
-    var url = mb_api_url + entity + "/" + "?fmt=json&query=";
+    var url = MB_API_URL + entity + "/" + "?fmt=json&query=";
     var first = true;
     for (const key in search_fields) {
         if (search_fields.hasOwnProperty(key)) {
@@ -47,7 +59,7 @@ function mb_api_query(entity, search_fields) {
                 url += " AND ";
             else
                 first = false;
-            url += key + ":" + search_fields[key];
+            url += key + ":\"" + search_fields[key].replace(/"+/g, "") + "\"";
         }
     }
     return $.getJSON(url).catch(function() {
@@ -59,12 +71,12 @@ function mb_api_query(entity, search_fields) {
 
 function on_track_get_info(duration, info_index) {
     lastfm_tracks[info_index].duration = duration;
-    if (lastfm_scrobbles_loaded) {
+    if (lastfm_all_scrobbles_loaded) {
         let tracks_loaded = lastfm_tracks.length - lastfm_trackinfo_counter;
         $progress_bar.attr("aria-valuenow", tracks_loaded).width(tracks_loaded * 100 / lastfm_tracks.length + "%");
         $progress_info.text("Retrieving track info... " + tracks_loaded + " / " + lastfm_tracks.length);
     }
-    if (--lastfm_trackinfo_counter == 0 && lastfm_scrobbles_loaded)
+    if (--lastfm_trackinfo_counter == 0 && lastfm_all_scrobbles_loaded)
         lastfm_on_all_data();
 }
 
@@ -163,11 +175,13 @@ function retrieve_track_info(artist_data, album_data, track_data) {
 
     if (track_data.mbid === "") {
         setTimeout(function () {
-            mb_api_query("recording", { recording: track_data.name, artist: artist_data.name, release: album_data.name }).done(function (data) {
+            mb_api_query("recording", { recording: track_data.name, artist: artist_data.name }).done(function (data) {
                 data = data.count ? data.recordings[0] : null;
                 if (data === null || !data.hasOwnProperty("length")) {
                     // no length data, try last.fm data.
                     lastfm_api_request("track.getinfo", { artist: artist_data.name, track: track_data.name }).done(function (data) {
+                        if(data === null)
+                            data = {};
                         if(!data.hasOwnProperty("track"))
                             data.track = { duration: "0" };
 
@@ -201,6 +215,8 @@ function retrieve_track_info(artist_data, album_data, track_data) {
                 if (data === null || !data.hasOwnProperty("length")) {
                     // no length data, try last.fm data.
                     lastfm_api_request("track.getinfo", { mbid: track_data.mbid }).done(function (data) {
+                        if(data === null)
+                            data = {};
                         if(!data.hasOwnProperty("track"))
                             data.track = { duration: "0" };
 
@@ -233,6 +249,12 @@ function retrieve_track_info(artist_data, album_data, track_data) {
 }
 
 function lastfm_on_recent_tracks(data) {
+    if(data === null)
+    {
+        console.error("Loading page " + lastfm_pages_loaded + " failed! Retrying...");
+        lastfm_api_request("user.getrecenttracks", { user: lastfm_username, from: from_time, limit: 200, page: lastfm_pages_loaded + 1 }).done(lastfm_on_recent_tracks);
+    }
+
     console.log(data);
     data = data.recenttracks;
     var attr = data["@attr"];
@@ -293,16 +315,17 @@ function lastfm_on_recent_tracks(data) {
 
     if (curr_page == 1)
         $progress_bar.attr("aria-valuemax", total_pages);
+    lastfm_pages_loaded = curr_page;
     $progress_bar.attr("aria-valuenow", curr_page).width(curr_page * 100 / total_pages + "%");
     $progress_info.text("Loading scrobbles... " + curr_page + " / " + total_pages);
     if (curr_page < total_pages)
-        lastfm_api_request("user.getrecenttracks", { user: attr.user, from: from_time, limit: 200, page: curr_page + 1 }).done(lastfm_on_recent_tracks);
+        lastfm_api_request("user.getrecenttracks", { user: lastfm_username, from: from_time, limit: 200, page: curr_page + 1 }).done(lastfm_on_recent_tracks);
     else {
         let tracks_loaded = lastfm_tracks.length - lastfm_trackinfo_counter;
         $progress_bar.attr({ "aria-valuemax": lastfm_tracks.length, "aria-valuenow": tracks_loaded })
             .width(tracks_loaded * 100 / lastfm_tracks.length + "%");
         $progress_info.text("Retrieving track info... " + tracks_loaded + " / " + lastfm_tracks.length);
-        lastfm_scrobbles_loaded = true;
+        lastfm_all_scrobbles_loaded = true;
 
         // if somehow all tracks loaded before pages loaded... probably due to cache.
         if (lastfm_trackinfo_counter == 0)
@@ -330,7 +353,8 @@ $("#run-form").on("submit", function(e) {
     $(this).collapse("hide");
 
     lastfm_api_key = $("#api-key-input").val();
-    lastfm_api_request("user.getrecenttracks", { user: $("#username-input").val(), from: from_time, limit: 200 }).done(lastfm_on_recent_tracks);
+    lastfm_username = $("#username-input").val();
+    lastfm_api_request("user.getrecenttracks", { user: lastfm_username, from: from_time, limit: 200 }).done(lastfm_on_recent_tracks);
 
     $("#progress-update").on("click", function() {
         lastfm_collate_data();
